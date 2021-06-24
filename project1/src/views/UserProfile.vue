@@ -2,67 +2,56 @@
   <div class="user-profile">
     <div class="user-profile_sidebar">
       <div class="user-profile_user-panel">
-        <h1 class="user-profile_userName">@{{ user.userName }}</h1>
-        <div class="user-profile_admin-badge" v-if="user.isAdmin">Admin</div>
+        <h1 class="user-profile_userName">@{{ state.user.userName }}</h1>
+        <div class="user-profile_admin-badge" v-if="state.user.isAdmin">Admin</div>
         <div class="use-profile_follower-count">
-          <strong>Follwers: </strong> {{ followers }}
+          <strong>Follwers: </strong> {{ state.followers }}
         </div>
       </div>
-      <CreatePostPanel @add-post="addPost" />
+      <CreatePostPanel @add_post="addPost" />
     </div>
     <div class="user-profile_posts-wrapper">
       <PostItem
-        v-for="disc in user.posts"
+        v-for="disc in state.user.posts"
         :key="disc.id"
-        :username="user.userName"
+        :username="state.user.userName"
         :post="disc"
-        @liked="toggleLiked"
       />
     </div>
   </div>
 </template>
 
 <script>
-import PostItem from "./PostItem.vue";
-import CreatePostPanel from "./CreatePostPanel.vue";
+import { reactive, computed } from "vue";
+import { useRoute } from "vue-router";
+import { users } from "@/assets/users";
+import PostItem from "@/components/PostItem.vue";
+import CreatePostPanel from "@/components/CreatePostPanel.vue";
 
 export default {
   name: "UserProfile",
   components: { CreatePostPanel, PostItem },
-  data() {
-    return {
+  setup() {
+    const route = useRoute();
+    const userId = computed(() => route.params.userId);
+
+    const state = reactive({
       followers: 0,
-      user: {
-        id: 1,
-        userName: "_DominicParker",
-        firstName: "Dominic",
-        lastName: "Parker",
-        email: "dominic.parker@project1.com",
-        isAdmin: true,
-        posts: [
-          {
-            id: 1,
-            content: "This is my first post.",
-          },
-          {
-            id: 2,
-            content: "This is my second post.",
-          },
-          {
-            id: 3,
-            content: "This is my Third post.",
-          },
-        ],
-      },
-    };
-  },
-  methods: {
-    addPost(post) {
-      this.user.posts.unshift({
-        id: this.user.posts.length + 1,
+      user: users[userId.value - 1] || users[0]
+    });
+
+    function addPost(post) {
+      state.user.posts.unshift({
+        id: state.user.posts.length + 1,
         content: post,
       });
-    },
+    }
+
+    return {
+      state,
+      addPost,
+      userId
+    };
   }
 };
 </script>
@@ -93,6 +82,8 @@ export default {
       color: white;
       border-radius: 5px;
       margin-right: auto;
+      margin-top: 5px;
+      margin-bottom: 5px;
       padding: 0 10px;
       font-weight: bold;
     }

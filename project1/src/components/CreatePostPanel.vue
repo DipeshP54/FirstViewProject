@@ -7,15 +7,15 @@
     <label for="txtPost">
       <strong>New Post : </strong>({{ newPostCharCount }}/200)
     </label>
-    <textarea id="txtpost" rows="5" v-model="newPostContent" />
+    <textarea id="txtpost" rows="5" v-model="state.newPostContent" />
 
     <div class="create-post-panel_submit">
       <div class="create-post-type">
         <label for="ddlPostType"><strong>Post Type : </strong></label>
 
-        <select id="ddlPostType" v-model="newPostType">
+        <select id="ddlPostType" v-model="state.newPostType">
           <option
-            v-for="(opt, index) in postTypes"
+            v-for="(opt, index) in state.postTypes"
             :key="index"
             :value="opt.value"
           >
@@ -30,34 +30,37 @@
 </template>
 
 <script>
+import { reactive, computed } from "vue";
+
 export default {
   name: "CreatePostPanel",
-  data() {
-    return {
+  setup(props, ctx) {
+    const state = reactive({
       newPostContent: "",
       newPostType: "instant",
       postTypes: [
         { value: "draft", typeName: "Draft" },
         { value: "instant", typeName: "Instant" },
-      ],
-    };
-  },
-  computed: {
-    newPostCharCount() {
-      return this.newPostContent.length;
-    },
-    newPostCharCountOverLimit() {
-      return this.newPostContent.length > 200;
-    },
-  },
-  methods: {
-    createNewPost() {
-      if (this.newPostContent && this.newPostType !== "draft") {
-        this.$emit("add-post", this.newPostContent);
-        this.newPostContent = "";
+      ]
+    });
+
+    const newPostCharCount = computed(() => state.newPostContent.length);
+    const newPostCharCountOverLimit = computed(()=> state.newPostContent.length > 200);
+
+    function createNewPost() {
+      if (state.newPostContent && state.newPostType !== "draft") {
+        ctx.emit("add_post", state.newPostContent);
+        state.newPostContent = "";
       }
-    },
-  },
+    }
+
+    return {
+      state,
+      newPostCharCount,
+      newPostCharCountOverLimit,
+      createNewPost
+    };
+  }
 };
 </script>
 
@@ -97,7 +100,7 @@ export default {
 
     .create-post-panel_submit {
       button {
-        background-color: red;
+        background-color: darkgray;
         color: white;
       }
     }
